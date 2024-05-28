@@ -62,7 +62,13 @@ namespace Pfim
                         {
                             int pixels = *inputPtr++ + 1;
                             int bytes = pixels * bytesPerPixel;
+#if NET45
+                            var sourceSpan = new Span<byte>(inputPtr, bytes);
+                            var destSpan = new Span<byte>(dataPtr, (int)(endSentinal - dataPtr));
+                            sourceSpan.CopyTo(destSpan);
+#elif NETSTANDARD2_0_OR_GREATER
                             Buffer.MemoryCopy(inputPtr, dataPtr, endSentinal - dataPtr, bytes);
+#endif
                             dataPtr += bytes;
                             pixelIndex += pixels;
                             inputPtr += bytes;

@@ -253,4 +253,26 @@ namespace Pfim
             return 4 * ((width * bytesPerPixel + 3) / 4);
         }
     }
+
+#if NET45
+    internal static class MemoryStreamExtensions
+    {
+        public static bool TryGetBuffer(this MemoryStream stream, out ArraySegment<byte> buffer)
+        {
+            try
+            {
+                byte[] sbuffer = stream.GetBuffer();
+                int _origin = 0;
+                int _length = (int)stream.Length;
+                buffer = new ArraySegment<byte>(sbuffer, offset: _origin, count: _length - _origin);
+                return true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                buffer = new ArraySegment<byte>();
+                return false;
+            }
+        }
+}
+#endif
 }

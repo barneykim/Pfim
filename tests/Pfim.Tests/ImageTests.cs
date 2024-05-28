@@ -114,9 +114,23 @@ namespace Pfim.Tests
             Assert.Equal(image.MipMaps, image2.MipMaps);
             Assert.Equal(Hash64(image.Data, image.DataLen), Hash64(image2.Data, image2.DataLen));
 
+#if NET6_0
             var maps = image.MipMaps.Select((x) => Hash64(new Span<byte>(image.Data, x.DataOffset, x.DataLen))).ToList();
             var maps2 = image2.MipMaps.Select((x) => Hash64(new Span<byte>(image2.Data, x.DataOffset, x.DataLen))).ToList();
             Assert.Equal(maps, maps2);
+#elif NET452
+            var maps = image.MipMaps.Select((x) =>
+            {
+                byte[] temp = new Span<byte>(image.Data, x.DataOffset, x.DataLen).ToArray();
+                return Hash64(temp, temp.Length);
+            }).ToList();
+            var maps2 = image2.MipMaps.Select((x) =>
+            {
+                byte[] temp2 = new Span<byte>(image2.Data, x.DataOffset, x.DataLen).ToArray();
+                return Hash64(temp2, temp2.Length);
+            }).ToList();
+            Assert.Equal(maps, maps2);
+#endif
 
             var mipMapLengths = image.MipMaps.Sum(x => x.DataLen);
             var hash1 = Hash64(image.Data, image.DataLen + mipMapLengths);
